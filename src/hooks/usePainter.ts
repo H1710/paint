@@ -3,18 +3,15 @@ import { useCallback, useRef, useState } from "react";
 export const usePainter = () => {
   const canvas = useRef<HTMLCanvasElement>();
   const [isReady, setIsReady] = useState(false);
-  const [isRegularMode, setIsRegularMode] = useState(true);
-  const [isAutoWidth, setIsAutoWidth] = useState(false);
-  const [isEraser, setIsEraser] = useState(false);
 
   const [currentColor, setCurrentColor] = useState("#000000");
-  const [currentWidth, setCurrentWidth] = useState(50);
+  const [currentWidth, setCurrentWidth] = useState(20);
 
   const autoWidth = useRef(false);
   const selectedSaturation = useRef(100);
   const selectedLightness = useRef(50);
   const selectedColor = useRef("#000000");
-  const selectedLineWidth = useRef(50);
+  const selectedLineWidth = useRef(10);
   const lastX = useRef(0);
   const lastY = useRef(0);
   const hue = useRef(0);
@@ -71,7 +68,7 @@ export const usePainter = () => {
           : (ctx.current.globalCompositeOperation = "source-over");
       } else {
         setCurrentColor(
-          `hsl(${hue.current},${selectedSaturation.current}%,${selectedLightness.current}%)`,
+          `hsl(${hue.current},${selectedSaturation.current}%,${selectedLightness.current}%)`
         );
         ctx.current.strokeStyle = `hsl(${hue.current},${selectedSaturation.current}%,${selectedLightness.current}%)`;
         ctx.current.globalCompositeOperation = "source-over";
@@ -86,7 +83,7 @@ export const usePainter = () => {
       }
       drawOnCanvas(e);
     },
-    [drawOnCanvas, dynamicLineWidth],
+    [drawOnCanvas, dynamicLineWidth]
   );
 
   const stopDrawing = useCallback(() => {
@@ -112,30 +109,6 @@ export const usePainter = () => {
     }
   }, [drawNormal, handleMouseDown, stopDrawing]);
 
-  const handleRegularMode = useCallback(() => {
-    setIsRegularMode(true);
-    isEraserMode.current = false;
-    setIsEraser(false);
-    isRegularPaintMode.current = true;
-  }, []);
-
-  const handleSpecialMode = useCallback(() => {
-    setIsRegularMode(false);
-    isEraserMode.current = false;
-    setIsEraser(false);
-    isRegularPaintMode.current = false;
-  }, []);
-
-  const handleColor = (e: any) => {
-    setCurrentColor(e.currentTarget.value);
-    selectedColor.current = e.currentTarget.value;
-  };
-
-  const handleWidth = (e: any) => {
-    setCurrentWidth(e.currentTarget.value);
-    selectedLineWidth.current = e.currentTarget.value;
-  };
-
   const handleClear = useCallback(() => {
     if (!ctx || !ctx.current || !canvas || !canvas.current) {
       return;
@@ -143,60 +116,16 @@ export const usePainter = () => {
     ctx.current.clearRect(0, 0, canvas.current.width, canvas.current.height);
   }, []);
 
-  const handleEraserMode = (e: any) => {
-    autoWidth.current = false;
-    setIsAutoWidth(false);
-    setIsRegularMode(true);
-    isEraserMode.current = true;
-    setIsEraser(true);
-  };
-
-  const setCurrentSaturation = (e: any) => {
-    setCurrentColor(
-      `hsl(${hue.current},${e.currentTarget.value}%,${selectedLightness.current}%)`,
-    );
-    selectedSaturation.current = e.currentTarget.value;
-  };
-
-  const setCurrentLightness = (e: any) => {
-    setCurrentColor(
-      `hsl(${hue.current},${selectedSaturation.current}%,${e.currentTarget.value}%)`,
-    );
-    selectedLightness.current = e.currentTarget.value;
-  };
-
-  const setAutoWidth = (e: any) => {
-    autoWidth.current = e.currentTarget.checked;
-    setIsAutoWidth(e.currentTarget.checked);
-
-    if (!e.currentTarget.checked) {
-      setCurrentWidth(selectedLineWidth.current);
-    } else {
-      setCurrentWidth(ctx?.current?.lineWidth ?? selectedLineWidth.current);
-    }
-  };
-
   return [
     {
       canvas,
       isReady,
       currentWidth,
       currentColor,
-      isRegularMode,
-      isAutoWidth,
-      isEraser,
     },
     {
       init,
-      handleRegularMode,
-      handleSpecialMode,
-      handleColor,
-      handleWidth,
       handleClear,
-      handleEraserMode,
-      setAutoWidth,
-      setCurrentSaturation,
-      setCurrentLightness,
     },
   ] as any;
 };
